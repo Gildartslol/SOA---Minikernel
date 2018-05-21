@@ -87,6 +87,8 @@ typedef struct{
 int sis_crear_proceso();
 int sis_terminar_proceso();
 int sis_escribir();
+/* Nuevas para la práctica */
+int obtener_id_pr();
 
 /*
  * Variable global que contiene las rutinas que realizan cada llamada

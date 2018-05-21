@@ -332,6 +332,18 @@ int sis_terminar_proceso(){
  * Rutina de inicialización invocada en arranque
  *
  */
+
+
+
+/** Devuelve el ID del proceso **/
+
+int obtener_id_pr() {
+	return p_proc_actual->id;
+}
+
+
+
+
 int main(){
 	/* se llega con las interrupciones prohibidas */
 

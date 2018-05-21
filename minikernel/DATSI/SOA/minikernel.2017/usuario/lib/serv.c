@@ -43,4 +43,11 @@ int terminar_proceso(){
 int escribir(char *texto, unsigned int longi){
 	return llamsis(ESCRIBIR, 2, (long)texto, (long)longi);
 }
+/** Nuevos practica **/
+
+int obtener_id_pr(){
+	return llamsis(OBTENER_ID, 0);
+}
+
+
 
