@@ -88,14 +88,19 @@ int sis_crear_proceso();
 int sis_terminar_proceso();
 int sis_escribir();
 /* Nuevas para la práctica */
-int obtener_id_pr();
+int sis_obtener_id_pr();
 
 /*
  * Variable global que contiene las rutinas que realizan cada llamada
  */
-servicio tabla_servicios[NSERVICIOS]={	{sis_crear_proceso},
+servicio tabla_servicios[NSERVICIOS]={	{
+					sis_crear_proceso},
 					{sis_terminar_proceso},
-					{sis_escribir}};
+					{sis_escribir},
+					{sis_obtener_id_pr}
+
+
+				};
 
 #endif /* _KERNEL_H */
 

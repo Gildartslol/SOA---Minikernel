@@ -46,7 +46,7 @@ int escribir(char *texto, unsigned int longi){
 /** Nuevos practica **/
 
 int obtener_id_pr(){
-	return llamsis(OBTENER_ID, 0);
+	return llamsis(OBTENER_ID_PR, 0);
 }
 
 

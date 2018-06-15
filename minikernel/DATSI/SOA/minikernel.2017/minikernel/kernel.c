@@ -335,9 +335,9 @@ int sis_terminar_proceso(){
 
 
 
-/** Devuelve el ID del proceso **/
+/** Devuelve el ID del proceso por el cual es invocado **/
 
-int obtener_id_pr() {
+int sis_obtener_id_pr() {
 	return p_proc_actual->id;
 }
 
