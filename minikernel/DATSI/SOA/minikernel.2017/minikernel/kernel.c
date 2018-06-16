@@ -210,12 +210,6 @@ static void int_terminal(){
 	car = leer_puerto(DIR_TERMINAL);
 	printk("-> TRATANDO INT. DE TERMINAL %c\n", car);
 
-
-
-char car;
-	car = leer_puerto(DIR_TERMINAL);
-	printk("-> TRATANDO INT. DE TERMINAL %c\n", car);
-
 	// si el buffer no está lleno introduce el caracter nuevo
 	if(caracteresEnBuffer < TAM_BUF_TERM){
 		bufferCaracteres[caracteresEnBuffer] = car;
