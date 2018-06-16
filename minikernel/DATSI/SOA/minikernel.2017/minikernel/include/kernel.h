@@ -42,6 +42,10 @@ typedef struct BCP_t {
 	int inicio_bloqueo;		/* instante de bloqueo */
 	int secs_bloqueo;		/* numero de segundos de bloqueo */
 
+	/*Funcion contabilidad*/
+	int veces_sistema;		/* numero de interr. en modo sistema */
+	int veces_usuario;		/* numero de interr. en modo usuario */
+
 
 } BCP;
 
