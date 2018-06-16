@@ -224,6 +224,7 @@ static void int_reloj(){
 		else{
 			p_proc_actual->veces_sistema++;
 		}
+	}
 
 
 
