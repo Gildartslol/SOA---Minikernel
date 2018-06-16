@@ -84,7 +84,7 @@ ALGO COMENTE ESTA PARTE Y DESCOMENTE LA PRUEBA CORRESPONDIENTE */
 		printf("Error creando prueba_RR2\n");
 */
 
- PRUEBA DEL TERMINAL
+ /*PRUEBA DEL TERMINAL*/
 	if (crear_proceso("prueba_term")<0)
 		printf("Error creando prueba_term\n");
 
