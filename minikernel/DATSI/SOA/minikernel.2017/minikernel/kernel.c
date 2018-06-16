@@ -107,6 +107,8 @@ static void espera_int(){
 
 	/*printk("-> NO HAY LISTOS. ESPERA INT\n");*/
 
+
+
 	/* Baja al mínimo el nivel de interrupción mientras espera */
 	nivel=fijar_nivel_int(NIVEL_1);
 	halt();
@@ -255,7 +257,7 @@ static void int_terminal(){
  */
 static void int_reloj(){
 
-	printk("-> TRATANDO INT. DE RELOJ\n");
+	//printk("-> TRATANDO INT. DE RELOJ\n");
 
 
 	BCP *proceso_listo = lista_listos.primero;
@@ -339,7 +341,7 @@ static void tratar_llamsis(){
  */
 static void int_sw(){
 
-	printk("-> TRATANDO INT. SW\n");
+	//printk("-> TRATANDO INT. SW\n");
 
 	/*Queremos bloquear el proceso actual*/
 	if(idABloquear == p_proc_actual->id){
