@@ -15,4 +15,10 @@ Dormir un proceso durante unos segundos.
 	En la tabla BCP añadimos dos campos 
 	int inicio_bloqueo;		/* instante de bloqueo */
 	int secs_bloqueo;		/* numero de segundos de bloqueo */
-	
+	Definimos una lista de procesos esperando en la cabcera del kernel.
+	Rellenamos la funcion de tratamiento de interrupcion de reloj para que desbloquee un proceso si se ha cumplido su tiempo.
+	Rellenamos el resto de cabeceras para el correcto llamamiento de la funcion dormir.
+
+Contabilidad de procesos en modo usuario y modo sistema.
+
+	En kernel.c creamos al funcion tiempos_proceso y la rellamos de acuerdo a la lógica del programa.

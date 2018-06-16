@@ -83,6 +83,11 @@ lista_BCPs lista_listos= {NULL, NULL};
 lista_BCPs lista_bloqueados = {NULL, NULL};
 
 /*
+ * Variable global que representa el acceso a zona de usuario en memoria
+ */
+int accesoParam = 0;
+
+/*
  * Variable global que representa el número de llamadas a int_reloj
  */
 int numTicks = 0;
@@ -114,6 +119,15 @@ typedef struct{
 
 
 /*
+Guarda el numero de veces ejecutado en modo sistema y cuantas en modo usuario.
+ */
+typedef struct tiempos_ejec {
+    int usuario;
+    int sistema;
+} tiempos_ejec;
+
+
+/*
  * Prototipos de las rutinas que realizan cada llamada al sistema
  */
 int sis_crear_proceso();
@@ -122,6 +136,7 @@ int sis_escribir();
 /* Nuevas para la práctica */
 int sis_obtener_id_pr();
 int sis_dormir();
+int sis_tiempos_proceso();
 
 /*
  * Variable global que contiene las rutinas que realizan cada llamada
@@ -131,7 +146,8 @@ servicio tabla_servicios[NSERVICIOS]={	{
 					{sis_terminar_proceso},
 					{sis_escribir},
 					{sis_obtener_id_pr},
-					{sis_dormir}
+					{sis_dormir},
+					{sis_tiempos_proceso}
 
 
 				};

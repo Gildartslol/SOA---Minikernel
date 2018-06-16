@@ -214,6 +214,17 @@ static void int_reloj(){
 	printk("-> TRATANDO INT. DE RELOJ\n");
 
 
+	BCP *proceso_listo = lista_listos.primero;
+	
+	/* PARTE TIEMPOS_PROCESO Añadimos contadores usuario o a sistema para el proceso en ejecución. Si es nulo nada.*/
+	if(proceso_listo != NULL){
+		if(viene_de_modo_usuario()){
+			p_proc_actual->veces_usuario++;
+		}
+		else{
+			p_proc_actual->veces_sistema++;
+		}
+
 
 
 	// Incrementa contador de llamadas a int_reloj
@@ -308,7 +319,7 @@ static int crear_tarea(char *prog){
 	if (proc==-1)
 		return -1;	/* no hay entrada libre */
 
-	/* A rellenar el BCP ... */
+	/* rellenamos el BCP*/
 	p_proc=&(tabla_procs[proc]);
 
 	/* crea la imagen de memoria leyendo ejecutable */
@@ -431,6 +442,28 @@ int sis_dormir(){
 	return 0;
 
 
+}
+
+/*devuelve el número de interrupciones de reloj que se han producido desde que arrancó el sistema. */
+int sis_tiempos_proceso(){
+
+	struct tiempos_ejec *tiempos_ejecucion;
+
+	// Comprueba si existe argumento
+	tiempos_ejecucion = (struct tiempos_ejec *)leer_registro(1);
+
+	if(tiempos_ejecucion != NULL){
+		// Si hay argumento fija variable global
+		int nivel_interrupciones = fijar_nivel_int(NIVEL_3);
+		accesoParam = 1;
+		fijar_nivel_int(nivel_interrupciones);
+
+		// Rellena estructura con el tiempo de sistema y tiempo de usuario
+		tiempos_ejecucion->sistema = p_proc_actual->veces_sistema;
+		tiempos_ejecucion->usuario = p_proc_actual->veces_usuario;
+	}
+
+	return numTicks;
 }
 
 
