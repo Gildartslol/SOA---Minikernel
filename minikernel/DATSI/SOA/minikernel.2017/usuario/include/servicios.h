@@ -19,6 +19,8 @@
 #ifndef SERVICIOS_H
 #define SERVICIOS_H
 
+#define NO_RECURSIVO 0
+#define RECURSIVO 1
 
 
 /* Evita el uso del printf de la bilioteca estándar */
@@ -39,7 +41,6 @@ int escribir(char *texto, unsigned int longi);
 int obtener_id_pr();
 int dormir(unsigned int segundos);
 int tiempos_proceso(struct tiempos_ejec *t_ejec);
-}
 
 #endif /* SERVICIOS_H */
 
