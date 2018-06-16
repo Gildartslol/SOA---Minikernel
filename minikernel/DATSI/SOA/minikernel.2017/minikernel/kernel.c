@@ -324,6 +324,7 @@ static int crear_tarea(char *prog){
 		p_proc->estado=LISTO;
 
 		/* lo inserta al final de cola de listos */
+		int nivel_interrupciones = fijar_nivel_int(NIVEL_3);
 		insertar_ultimo(&lista_listos, p_proc);
 		fijar_nivel_int(nivel_interrupciones);
 		error= 0;
