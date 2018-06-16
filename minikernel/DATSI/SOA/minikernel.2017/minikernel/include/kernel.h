@@ -26,6 +26,21 @@
 #define NO_RECURSIVO 0
 #define RECURSIVO 1
 
+
+
+
+/*
+ * Definimos un mutex compuesto por su nombre, tipo , arrays procesos abiertos y bloqueados.
+
+ */
+typedef struct{
+    char *nombre; 	// nombre del mutex
+	int tipo;		// tipo del mutex (no recursivo = 0, recursivo = 1)
+	int procesos[MAX_PROC]; // Procesos con el mutex abierto
+	int procesosBloqueados[MAX_PROC]; // Procesos bloqueados en el mutex
+} mutex;
+
+
 /*
  *
  * Definicion del tipo que corresponde con el BCP.
@@ -60,16 +75,7 @@ typedef struct BCP_t {
 
 } BCP;
 
-/*
- * Definimos un mutex compuesto por su nombre, tipo , arrays procesos abiertos y bloqueados.
 
- */
-typedef struct{
-    char *nombre; 	// nombre del mutex
-	int tipo;		// tipo del mutex (no recursivo = 0, recursivo = 1)
-	int procesos[MAX_PROC]; // Procesos con el mutex abierto
-	int procesosBloqueados[MAX_PROC]; // Procesos bloqueados en el mutex
-} mutex;
 
 /*
  *
