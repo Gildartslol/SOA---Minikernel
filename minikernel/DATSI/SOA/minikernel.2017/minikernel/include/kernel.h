@@ -58,8 +58,8 @@ typedef struct BCP_t {
 	void *info_mem;			/* descriptor del mapa de memoria */
 
 	/**Funcion dormir**/
-	int inicio_bloqueo;		/* instante de bloqueo */
-	int secs_bloqueo;		/* numero de segundos de bloqueo */
+	int tiempo_inicio_bloq;		/* instante de bloqueo */
+	int segundos_bloqueo;		/* numero de segundos de bloqueo */
 
 	/*Funcion contabilidad*/
 	int veces_sistema;		/* numero de interr. en modo sistema */
@@ -75,7 +75,7 @@ typedef struct BCP_t {
 	/*Round Robin*/
 	int ticksRestantesRodaja; /* número de ticks restantes para terminar rodaja */
 
-	/*CARACTERES*/
+	/*Leer caracteres*/
 	int bloqueadoPorLectura;/* 1 indica que esta bloqueado por lectura de caracter */
 
 } BCP;

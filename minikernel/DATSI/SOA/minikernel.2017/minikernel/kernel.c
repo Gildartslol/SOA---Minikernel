@@ -141,9 +141,9 @@ static void liberar_proceso(){
 
 	p_proc_actual->estado=TERMINADO;
 
-	int nivel_interrupciones = fijar_nivel_int(NIVEL_3);
+	int lvl_interrupciones = fijar_nivel_int(NIVEL_3);
 	eliminar_primero(&lista_listos); /* proc. fuera de listos */
-	fijar_nivel_int(nivel_interrupciones);
+	fijar_nivel_int(lvl_interrupciones);
 
 	/* Realizar cambio de contexto */
 	p_proc_anterior=p_proc_actual;
@@ -228,10 +228,10 @@ static void int_terminal(){
 				desbloqueado = 1;
 				proceso_bloqueado->estado = LISTO;
 				proceso_bloqueado->bloqueadoPorLectura = 0;
-				int nivel_interrupciones = fijar_nivel_int(NIVEL_3);
+				int lvl_interrupciones = fijar_nivel_int(NIVEL_3);
 				eliminar_elem(&lista_bloqueados, proceso_bloqueado);
 				insertar_ultimo(&lista_listos, proceso_bloqueado);
-				fijar_nivel_int(nivel_interrupciones);
+				fijar_nivel_int(lvl_interrupciones);
 			}
 		}
 		
@@ -242,10 +242,10 @@ static void int_terminal(){
 				desbloqueado = 1;
 				proceso_bloqueado->estado = LISTO;
 				proceso_bloqueado->bloqueadoPorLectura = 0;
-				int nivel_interrupciones = fijar_nivel_int(NIVEL_3);
+				int lvl_interrupciones = fijar_nivel_int(NIVEL_3);
 				eliminar_elem(&lista_bloqueados, proceso_bloqueado);
 				insertar_ultimo(&lista_listos, proceso_bloqueado);
-				fijar_nivel_int(nivel_interrupciones);
+				fijar_nivel_int(lvl_interrupciones);
 			}
 		}
 	}
@@ -298,8 +298,8 @@ static void int_reloj(){
 	while(procesoADesbloquear != NULL){
 		
 		// Calculo de tiempo de bloqueo
-		int numTicksBloqueo = procesoADesbloquear->secs_bloqueo * TICK;
-		int ticksTranscurridos = numTicks - procesoADesbloquear->inicio_bloqueo;
+		int numTicksBloqueo = procesoADesbloquear->segundos_bloqueo * TICK;
+		int ticksTranscurridos = numTicks - procesoADesbloquear->tiempo_inicio_bloq;
 
 		// Comprueba si el proceso se debe desbloquear
 		if(ticksTranscurridos >= numTicksBloqueo && 
@@ -309,10 +309,10 @@ static void int_reloj(){
 			// Proceso de desbloquea y pasa a estado listo
 			procesoADesbloquear->estado = LISTO;
 
-			int nivel_interrupciones = fijar_nivel_int(NIVEL_3);
+			int lvl_interrupciones = fijar_nivel_int(NIVEL_3);
 			eliminar_elem(&lista_bloqueados, procesoADesbloquear);
 			insertar_ultimo(&lista_listos, procesoADesbloquear);
-			fijar_nivel_int(nivel_interrupciones);	
+			fijar_nivel_int(lvl_interrupciones);	
 		}
 
 		procesoADesbloquear = procesoSiguiente;
@@ -350,10 +350,10 @@ static void int_sw(){
 	if(idABloquear == p_proc_actual->id){
 		// Pone el proceso ejecutando al final de la cola de listos
 		BCP *proceso = lista_listos.primero;
-		int nivel_interrupciones = fijar_nivel_int(NIVEL_3);
+		int lvl_interrupciones = fijar_nivel_int(NIVEL_3);
 		eliminar_elem(&lista_listos, proceso);
 		insertar_ultimo(&lista_listos, proceso);
-		fijar_nivel_int(nivel_interrupciones);
+		fijar_nivel_int(lvl_interrupciones);
 
 		// Cambio de contexto por int sw de planificación
 		BCP *p_proc_bloqueado = p_proc_actual;
@@ -396,9 +396,9 @@ static int crear_tarea(char *prog){
 		p_proc->estado=LISTO;
 
 		/* lo inserta al final de cola de listos */
-		int nivel_interrupciones = fijar_nivel_int(NIVEL_3);
+		int lvl_interrupciones = fijar_nivel_int(NIVEL_3);
 		insertar_ultimo(&lista_listos, p_proc);
-		fijar_nivel_int(nivel_interrupciones);
+		fijar_nivel_int(lvl_interrupciones);
 		error= 0;
 	}
 	else
@@ -474,29 +474,28 @@ int sis_obtener_id_pr() {
 /**Duerme el proceso los segundos especificados por registro**/
 int sis_dormir(){
 
-	unsigned int numSegundos;
-	int nivel_interrupciones;
-	numSegundos = (unsigned int)leer_registro(1);
+	unsigned int segundos;
+	int lvl_interrupciones;
+	segundos = (unsigned int)leer_registro(1);
 	printk("-> durmiendo \n");
 
-	// actualiza BCP con el num de segundos y cambia estado a bloqueado
 	p_proc_actual->estado = BLOQUEADO;
-	p_proc_actual->inicio_bloqueo = numTicks;
-	p_proc_actual->secs_bloqueo = numSegundos;	
+	p_proc_actual->tiempo_inicio_bloq = numTicks;
+	p_proc_actual->segundos_bloqueo = segundos;	
 
-	// Guarda el nivel anterior de interrupcion y lo fija a 3
-	nivel_interrupciones = fijar_nivel_int(NIVEL_3);
+	/*Interrupciones inhubidas y guardamos anterior nivel*/
+	lvl_interrupciones = fijar_nivel_int(NIVEL_3);
 	
-	// 1. Saca de la lista de procesos listos el BCP del proceso
+	/*Lo sacamos de listos al proceso*/
 	eliminar_elem(&lista_listos, p_proc_actual);
 
-	// 2. Inserta el BCP del proceso en la lista de bloqueados
+	/*Lo introducimos en bloqueados*/
 	insertar_ultimo(&lista_bloqueados, p_proc_actual);
 
-	// Restaura el nivel de interrupcion anterior
-	fijar_nivel_int(nivel_interrupciones);
+	/*Fijamos el anterior nivel de interrupcion*/
+	fijar_nivel_int(lvl_interrupciones);
 
-	// Cambio de contexto voluntario
+	/*Realizamos el cambio de contexto */
 	BCP *p_proc_dormido = p_proc_actual;
 	p_proc_actual = planificador();
 	cambio_contexto(&(p_proc_dormido->contexto_regs), &(p_proc_actual->contexto_regs));
@@ -516,9 +515,9 @@ int sis_tiempos_proceso(){
 
 	if(tiempos_ejecucion != NULL){
 		// Si hay argumento fija variable global
-		int nivel_interrupciones = fijar_nivel_int(NIVEL_3);
+		int lvl_interrupciones = fijar_nivel_int(NIVEL_3);
 		accesoParam = 1;
-		fijar_nivel_int(nivel_interrupciones);
+		fijar_nivel_int(lvl_interrupciones);
 
 		// Rellena estructura con el tiempo de sistema y tiempo de usuario
 		tiempos_ejecucion->sistema = p_proc_actual->veces_sistema;
@@ -559,10 +558,10 @@ int sis_crear_mutex(){
 		p_proc_actual->estado = BLOQUEADO;
 		p_proc_actual->bloqueadoCreandoMutex = 1;
 
-		int nivel_interrupciones = fijar_nivel_int(NIVEL_3);
+		int lvl_interrupciones = fijar_nivel_int(NIVEL_3);
 		eliminar_elem(&lista_listos, p_proc_actual);
 		insertar_ultimo(&lista_bloqueados, p_proc_actual);
-		fijar_nivel_int(nivel_interrupciones);
+		fijar_nivel_int(lvl_interrupciones);
 
 		// Cambio de contexto voluntario
 		BCP *proceso_bloqueado = p_proc_actual;
@@ -673,22 +672,22 @@ int sis_leer_caracter(){
 			p_proc_actual->estado = BLOQUEADO;
 			p_proc_actual->bloqueadoPorLectura = 1;
 
-			int nivel_interrupciones = fijar_nivel_int(NIVEL_3);
+			int lvl_interrupciones = fijar_nivel_int(NIVEL_3);
 			eliminar_elem(&lista_listos, p_proc_actual);
 			insertar_ultimo(&lista_bloqueados, p_proc_actual);
-			fijar_nivel_int(nivel_interrupciones);
-			nivel_interrupciones = fijar_nivel_int(NIVEL_2);
+			fijar_nivel_int(lvl_interrupciones);
+			lvl_interrupciones = fijar_nivel_int(NIVEL_2);
 
 			// Cambio de contexto voluntario		
 			BCP *proceso_bloqueado = p_proc_actual;
 			p_proc_actual = planificador();
 			cambio_contexto(&(proceso_bloqueado->contexto_regs), &(p_proc_actual->contexto_regs));
-			fijar_nivel_int(nivel_interrupciones);
+			fijar_nivel_int(lvl_interrupciones);
 		}
 		else{
 			int i;
 			// Solicita el primer caracter del buffer
-			int nivel_interrupciones = fijar_nivel_int(NIVEL_2);
+			int lvl_interrupciones = fijar_nivel_int(NIVEL_2);
 			char car = bufferCaracteres[0];
 			caracteresEnBuffer--;
 			printk("-> Consumiendo %c\n", car);
@@ -696,7 +695,7 @@ int sis_leer_caracter(){
 			for (i = 0; i < caracteresEnBuffer; i++){
 				bufferCaracteres[i] = bufferCaracteres[i+1];
 			}
-			fijar_nivel_int(nivel_interrupciones);
+			fijar_nivel_int(lvl_interrupciones);
 
 			return (long)car;
 		}
@@ -712,15 +711,15 @@ int sis_leer_caracter(){
 
 // Inhibir interrupciones <= nivel 2
 	
-	int nivel_interrupciones = fijar_nivel_int(NIVEL_2);
+	int lvl_interrupciones = fijar_nivel_int(NIVEL_2);
 	// Bloqueo si vacio -> con loop en vez de condicion
 	while(caracteresEnBuffer == 0){
 		p_proc_actual->estado = BLOQUEADO;
 		p_proc_actual->bloqueadoPorLectura = 1;
-		int nivel_interrupciones = fijar_nivel_int(NIVEL_3);
+		int lvl_interrupciones = fijar_nivel_int(NIVEL_3);
 		eliminar_elem(&lista_listos, p_proc_actual);
 		insertar_ultimo(&lista_bloqueados, p_proc_actual);
-		fijar_nivel_int(nivel_interrupciones);
+		fijar_nivel_int(lvl_interrupciones);
 
 		// Cambio de proceso actual con cambio de contexto
 		BCP *proc_bloq = p_proc_actual;
@@ -738,7 +737,7 @@ int sis_leer_caracter(){
 	for (i = 0; i < caracteresEnBuffer; i++){
 		bufferCaracteres[i] = bufferCaracteres[i+1];
 	}
-	fijar_nivel_int(nivel_interrupciones);
+	fijar_nivel_int(lvl_interrupciones);
 
 	return car;
 
