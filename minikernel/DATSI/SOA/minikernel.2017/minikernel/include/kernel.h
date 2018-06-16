@@ -22,6 +22,10 @@
 #include "HAL.h"
 #include "llamsis.h"
 
+
+#define NO_RECURSIVO 0
+#define RECURSIVO 1
+
 /*
  *
  * Definicion del tipo que corresponde con el BCP.
@@ -31,10 +35,10 @@
 typedef struct BCP_t *BCPptr;
 
 typedef struct BCP_t {
-        int id;				/* ident. del proceso */
-        int estado;			/* TERMINADO|LISTO|EJECUCION|BLOQUEADO*/
-        contexto_t contexto_regs;	/* copia de regs. de UCP */
-        void * pila;			/* dir. inicial de la pila */
+    int id;				/* ident. del proceso */
+    int estado;			/* TERMINADO|LISTO|EJECUCION|BLOQUEADO*/
+    contexto_t contexto_regs;	/* copia de regs. de UCP */
+    void * pila;			/* dir. inicial de la pila */
 	BCPptr siguiente;		/* puntero a otro BCP */
 	void *info_mem;			/* descriptor del mapa de memoria */
 
@@ -46,8 +50,26 @@ typedef struct BCP_t {
 	int veces_sistema;		/* numero de interr. en modo sistema */
 	int veces_usuario;		/* numero de interr. en modo usuario */
 
+	/**Funcion MUTEX*/
+	int numMutex;			/* numero de mutex */
+	mutex *array_mutex_proceso[NUM_MUT_PROC]; /* Array de mutex del proceso */
+	char *bloqueadoPorMutex; /* Indica el mutex que tiene bloqueado al proceso */
+
+	/*Round Robin*/
+	int ticksRestantesRodaja; /* número de ticks restantes para terminar rodaja */
 
 } BCP;
+
+/*
+ * Definimos un mutex compuesto por su nombre, tipo , arrays procesos abiertos y bloqueados.
+
+ */
+typedef struct{
+    char *nombre; 	// nombre del mutex
+	int tipo;		// tipo del mutex (no recursivo = 0, recursivo = 1)
+	int procesos[MAX_PROC]; // Procesos con el mutex abierto
+	int procesosBloqueados[MAX_PROC]; // Procesos bloqueados en el mutex
+} mutex;
 
 /*
  *
@@ -110,6 +132,18 @@ char bufferCaracteres[TAM_BUF_TERM];
  * Variable global que indica el número de caracteres en el buffer
  */
 int caracteresEnBuffer = 0;
+
+
+/*
+ * Array de mutex
+ */
+mutex array_mutex[NUM_MUT];
+
+/*
+ * Variable global que indica el número de mutex existentes
+ */
+int mutexExistentes = 0;
+
 
 /*
  *

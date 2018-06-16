@@ -120,7 +120,9 @@ static BCP * planificador(){
 	while (lista_listos.primero==NULL)
 		espera_int();		/* No hay nada que hacer */
 
-
+	/*Aqui asignaremos la rodaja del proceso*/
+	BCP *proceso = lista_listos.primero;
+	proceso->ticksRestantesRodaja = TICKS_POR_RODAJA;
 
 
 
@@ -229,8 +231,19 @@ static void int_reloj(){
 		else{
 			p_proc_actual->veces_sistema++;
 		}
-	}
+	
 
+		// Comprueba si ha terminado rodaja de tiempo del proceso
+		if(p_proc_actual->ticksRestantesRodaja <= 1){
+			// Si no le queda rodaja activa int SW de planificacion
+			idABloquear = p_proc_actual->id;
+			activar_int_SW();
+		}
+		else{
+			// Resta tick de rodaja al proceso
+			p_proc_actual->ticksRestantesRodaja--;
+		}
+	}
 
 
 	// Incrementa contador de llamadas a int_reloj
@@ -472,8 +485,126 @@ int sis_tiempos_proceso(){
 	return numTicks;
 }
 
+
+int sis_crear_mutex(){
+
+	char *nombre = (char *)leer_registro(1);
+	int tipo = (int)leer_registro(2);
+
+	// Comprueba número de mutex del proceso
+	if(p_proc_actual->numMutex >= NUM_MUT_PROC){
+		return -1;
+	}
+
+	// Comprueba tamaño de nombre
+	if(strlen(nombre) > MAX_NOM_MUT){
+		return -2;
+	}	
+
+	// Comprueba nombre único de mutex
+	int i;
+	for (i = 0; i < NUM_MUT; i++){
+		if(array_mutex[i].nombre != NULL && 
+			strcmp(array_mutex[i].nombre, nombre) == 0){
+			return -3;
+		}
+	}
+
+	// Compueba número de mutex en el sistema
+	while(mutexExistentes == NUM_MUT){
+		// Bloquear proceso actual
+		p_proc_actual->estado = BLOQUEADO;
+		p_proc_actual->bloqueadoCreandoMutex = 1;
+
+		int nivel_interrupciones = fijar_nivel_int(NIVEL_3);
+		eliminar_elem(&lista_listos, p_proc_actual);
+		insertar_ultimo(&lista_bloqueados, p_proc_actual);
+		fijar_nivel_int(nivel_interrupciones);
+
+		// Cambio de contexto voluntario
+		BCP *proceso_bloqueado = p_proc_actual;
+		p_proc_actual = planificador();
+		cambio_contexto(&(proceso_bloqueado->contexto_regs), &(p_proc_actual->contexto_regs));	
+
+		// Vuelve a activarse y comprueba nombre único de mutex
+		for (i = 0; i < NUM_MUT; i++){
+			if(array_mutex[i].nombre != NULL && 
+				strcmp(array_mutex[i].nombre, nombre) == 0){
+				return -3;
+			}
+		}
+	}
+
+	// Busca espacio libre para crear nuevo mutex
+	int posMutex;
+	for (i = 0; i < NUM_MUT; i++){
+		if(array_mutex[i].nombre == NULL){
+			mutex *mutexCreado = &(array_mutex[i]);
+			mutexCreado->nombre = strdup(nombre);
+			mutexCreado->tipo=tipo;
+			array_mutex[i].procesos[p_proc_actual->id] = 1;
+			posMutex = i;
+			break;
+		}
+	}
+	
+	mutexExistentes++;
+
+	// Busca descriptor libre para mutex
+	int df = -4; // Descriptor
+	for (i = 0; i < NUM_MUT_PROC; i++){
+		if(p_proc_actual->array_mutex_proceso[i] == NULL){
+			p_proc_actual->array_mutex_proceso[i] = &array_mutex[posMutex];
+			p_proc_actual->numMutex++;
+			df = i;
+			break;
+		}
+	}
+
+	return df;
+}
+
+
 int sis_abrir_mutex(){
 
+
+char *nombre = (char *)leer_registro(1);
+
+	// Comprueba número de mutex del proceso
+	if(p_proc_actual->numMutex == NUM_MUT_PROC){
+		return -1;
+	}
+
+	int i;
+	int encontrado = 0;
+
+	/*Buscamos en el array de mutex uno con el mismo nombre. COmprobamos existencia*/
+	for (i = 0; i < NUM_MUT; i++){
+		if(array_mutex[i].nombre != NULL && strcmp(array_mutex[i].nombre, nombre) == 0){
+
+			array_mutex[i].procesos[p_proc_actual->id] = 1;
+			posMutex = 1;
+			break;
+		}
+	}
+
+	/*Si no existe el mutex*/
+	if(posMutex == 0){
+		return -1;
+	}
+
+	/*Si existe el mutex buscamos un descriptor que asociale*/
+	int df = -1; 
+	for (i = 0; i < NUM_MUT_PROC; i++){
+		if(p_proc_actual->array_mutex_proceso[i] == NULL){
+			p_proc_actual->array_mutex_proceso[i] = &array_mutex[posMutex];
+			p_proc_actual->numMutex++;
+			df = i;
+			break;
+		}
+	}
+
+	return df;
 
 }
 

@@ -23,3 +23,10 @@ Contabilidad de procesos en modo usuario y modo sistema.
 
 	En kernel.c creamos al funcion tiempos_proceso y la rellenamos de acuerdo a la lógica del programa. Marcamos con una variable global cuandoa accedemos a memoria por si da un excepcion en dicha zona poder evitar que se congele el sistema y solo se aborte el proceso.
 	En la funcion simplemente volcamos los datos de cada proceso almacenado en su tabla de proceso correspondiente al numero de veces llamados en ejecucion o en sistema y los llevamos al struct global creado.
+
+
+ Mutex
+
+  	Para comenzar creamos todas las funciones y variables que especifica el enunciado, como un mutex struc compuesto de nombre, tipo, procesos con el mutex abierto y con el mutex bloqueado.
+
+  	En abrir_mutex comporbamos que el mutex existe y procedemos a darle un descriptor.
