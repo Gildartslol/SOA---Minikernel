@@ -706,10 +706,6 @@ int sis_leer_caracter(){
 
 
 int sis_leer_caracter(){
-
-
-
-// Inhibir interrupciones <= nivel 2
 	
 	int lvl_interrupciones = fijar_nivel_int(NIVEL_2);
 	// Bloqueo si vacio -> con loop en vez de condicion
@@ -730,7 +726,7 @@ int sis_leer_caracter(){
 	// Recuperar primer caracter
 	char car = bufferCaracteres[0];
 
-	// Reassign positions in buffer
+	/*Reordenamos el buffer*/
 	printk("Reasignado buffer, tamanio = %d\n", caracteresEnBuffer);
 	caracteresEnBuffer--;
 	int i;

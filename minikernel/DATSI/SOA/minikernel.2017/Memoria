@@ -47,6 +47,9 @@ Contabilidad de procesos en modo usuario y modo sistema.
 
  Caracteres
 
+ Añadimos una nueva variable a la tabla de proceso bloqueo_por_lectura que indica si el proceso esta bloqueado por una lectura de un caracter.
+ En la funcion leer_caracter, utilizamos un bucle mientras no halla caracteres en los cuales bloqueamos el proceso a la espera de una interrupcion de termina, en caso de que existan caracteres que consumir se extraen del buffer, se consumen y se reordena el buffer.
+
 
 
 
