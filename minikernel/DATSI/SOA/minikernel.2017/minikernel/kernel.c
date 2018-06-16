@@ -266,10 +266,10 @@ static void int_reloj(){
 	/* PARTE TIEMPOS_PROCESO Añadimos contadores usuario o a sistema para el proceso en ejecución. Si es nulo nada.*/
 	if(proceso_listo != NULL){
 		if(viene_de_modo_usuario()){
-			p_proc_actual->veces_usuario++;
+			p_proc_actual->contador_usuario++;
 		}
 		else{
-			p_proc_actual->veces_sistema++;
+			p_proc_actual->contador_sistema++;
 		}
 	
 
@@ -508,10 +508,10 @@ int sis_dormir(){
 /*devuelve el número de interrupciones de reloj que se han producido desde que arrancó el sistema. */
 int sis_tiempos_proceso(){
 
-	struct tiempos_ejec *tiempos_ejecucion;
+	struct tiemposDejecucion*tiempos_ejecucion;
 
 	// Comprueba si existe argumento
-	tiempos_ejecucion = (struct tiempos_ejec *)leer_registro(1);
+	tiempos_ejecucion = (struct tiemposDejecucion*)leer_registro(1);
 
 	if(tiempos_ejecucion != NULL){
 		// Si hay argumento fija variable global
@@ -520,8 +520,8 @@ int sis_tiempos_proceso(){
 		fijar_nivel_int(lvl_interrupciones);
 
 		// Rellena estructura con el tiempo de sistema y tiempo de usuario
-		tiempos_ejecucion->sistema = p_proc_actual->veces_sistema;
-		tiempos_ejecucion->usuario = p_proc_actual->veces_usuario;
+		tiempos_ejecucion->usuario = p_proc_actual->contador_usuario;
+		tiempos_ejecucion->sistema = p_proc_actual->contador_sistema;
 	}
 
 	return numTicks;

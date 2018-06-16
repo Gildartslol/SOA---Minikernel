@@ -62,8 +62,8 @@ typedef struct BCP_t {
 	int segundos_bloqueo;		/* numero de segundos de bloqueo */
 
 	/*Funcion contabilidad*/
-	int veces_sistema;		/* numero de interr. en modo sistema */
-	int veces_usuario;		/* numero de interr. en modo usuario */
+	int contador_sistema;		/* numero de interr. en modo sistema */
+	int contador_usuario;		/* numero de interr. en modo usuario */
 
 	/**Funcion MUTEX*/
 	int numMutex;			/* numero de mutex */
@@ -170,7 +170,7 @@ typedef struct{
 /*
 Guarda el numero de veces ejecutado en modo sistema y cuantas en modo usuario.
  */
-typedef struct tiempos_ejec {
+typedef struct tiemposDejecucion {
     int usuario;
     int sistema;
 } tiempos_ejec;
