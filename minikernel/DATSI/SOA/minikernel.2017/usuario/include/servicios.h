@@ -42,5 +42,11 @@ int obtener_id_pr();
 int dormir(unsigned int segundos);
 int tiempos_proceso(struct tiempos_ejec *t_ejec);
 
+int crear_mutex(char *nombre, int tipo);
+int abrir_mutex(char *nombre);
+int lock(unsigned int mutexid);
+int unlock(unsigned int mutexid);
+int cerrar_mutex(unsigned int mutexid);
+
 #endif /* SERVICIOS_H */
 

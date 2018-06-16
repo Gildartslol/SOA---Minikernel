@@ -142,6 +142,12 @@ int sis_obtener_id_pr();
 int sis_dormir();
 int sis_tiempos_proceso();
 
+int sis_crear_mutex();
+int sis_abrir_mutex();
+int sis_lock();
+int sis_unlock();
+int sis_cerrar_mutex();
+
 /*
  * Variable global que contiene las rutinas que realizan cada llamada
  */
@@ -151,7 +157,12 @@ servicio tabla_servicios[NSERVICIOS]={	{
 					{sis_escribir},
 					{sis_obtener_id_pr},
 					{sis_dormir},
-					{sis_tiempos_proceso}
+					{sis_tiempos_proceso},
+					{sis_crear_mutex},
+					{sis_abrir_mutex},
+					{sis_lock},
+					{sis_unlock},
+					{sis_cerrar_mutex}
 
 
 				};

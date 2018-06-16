@@ -139,7 +139,10 @@ static void liberar_proceso(){
 	liberar_imagen(p_proc_actual->info_mem); /* liberar mapa */
 
 	p_proc_actual->estado=TERMINADO;
+
+	int nivel_interrupciones = fijar_nivel_int(NIVEL_3);
 	eliminar_primero(&lista_listos); /* proc. fuera de listos */
+	fijar_nivel_int(nivel_interrupciones);
 
 	/* Realizar cambio de contexto */
 	p_proc_anterior=p_proc_actual;
@@ -467,6 +470,11 @@ int sis_tiempos_proceso(){
 	}
 
 	return numTicks;
+}
+
+int sis_abrir_mutex(){
+
+
 }
 
 
