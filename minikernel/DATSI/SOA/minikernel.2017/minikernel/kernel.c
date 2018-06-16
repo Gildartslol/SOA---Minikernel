@@ -474,6 +474,7 @@ int sis_dormir(){
 	unsigned int numSegundos;
 	int nivel_interrupciones;
 	numSegundos = (unsigned int)leer_registro(1);
+	printk("-> durmiendo \n");
 
 	// actualiza BCP con el num de segundos y cambia estado a bloqueado
 	p_proc_actual->estado = BLOQUEADO;
@@ -686,7 +687,7 @@ int sis_leer_caracter(){
 			int nivel_interrupciones = fijar_nivel_int(NIVEL_2);
 			char car = bufferCaracteres[0];
 			caracteresEnBuffer--;
-
+			printk("-> Consumiendo %c\n", car);
 			// Reordena el buffer
 			for (i = 0; i < caracteresEnBuffer; i++){
 				bufferCaracteres[i] = bufferCaracteres[i+1];
