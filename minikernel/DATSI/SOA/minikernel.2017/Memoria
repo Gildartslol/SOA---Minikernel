@@ -1,3 +1,18 @@
 Memoria
 
 Obtener ID del proceso.
+
+PAra el proceso mas sencillo seguimos los siguientes pasos . 
+	En Kernel.c creamos y rellenamos la funcion con lo correspondiente para su funcionamiento. En este caso muy sencillo 
+	return p_proc_actual->id;
+	Añadimos en la cabecera del kernel, kernel.h un hueco en el array de servicios para el nuevo servicio. Creando el prototipo de la función.
+	En llamsis.h le asignamos un numero correspondiente de proceso para ejecutar.
+	En serv.c creamos la llamada con el numero correspondiente y en serv.h el prototipo de esta llamada.
+
+
+Dormir un proceso durante unos segundos.
+	En kernel.c creamos y rellenamos la funcion sis_dormir de acorde a su funcionamiento.
+	En la tabla BCP añadimos dos campos 
+	int inicio_bloqueo;		/* instante de bloqueo */
+	int secs_bloqueo;		/* numero de segundos de bloqueo */
+	

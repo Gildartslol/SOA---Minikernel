@@ -37,6 +37,11 @@ typedef struct BCP_t {
         void * pila;			/* dir. inicial de la pila */
 	BCPptr siguiente;		/* puntero a otro BCP */
 	void *info_mem;			/* descriptor del mapa de memoria */
+
+	int inicio_bloqueo;		/* instante de bloqueo */
+	int secs_bloqueo;		/* numero de segundos de bloqueo */
+
+
 } BCP;
 
 /*
@@ -70,6 +75,23 @@ BCP tabla_procs[MAX_PROC];
  */
 lista_BCPs lista_listos= {NULL, NULL};
 
+
+/*
+ * Variable global que representa el id del proceso al que va
+ * dirigida la int sw de planificacion
+ */
+int idABloquear = 0;
+
+/*
+ * Buffer de caracteres procesados del terminal
+ */
+char bufferCaracteres[TAM_BUF_TERM];
+
+/*
+ * Variable global que indica el número de caracteres en el buffer
+ */
+int caracteresEnBuffer = 0;
+
 /*
  *
  * Definición del tipo que corresponde con una entrada en la tabla de
@@ -89,6 +111,7 @@ int sis_terminar_proceso();
 int sis_escribir();
 /* Nuevas para la práctica */
 int sis_obtener_id_pr();
+int sis_dormir();
 
 /*
  * Variable global que contiene las rutinas que realizan cada llamada
@@ -97,7 +120,8 @@ servicio tabla_servicios[NSERVICIOS]={	{
 					sis_crear_proceso},
 					{sis_terminar_proceso},
 					{sis_escribir},
-					{sis_obtener_id_pr}
+					{sis_obtener_id_pr},
+					{sis_dormir}
 
 
 				};

@@ -119,6 +119,11 @@ static void espera_int(){
 static BCP * planificador(){
 	while (lista_listos.primero==NULL)
 		espera_int();		/* No hay nada que hacer */
+
+
+
+
+
 	return lista_listos.primero;
 }
 
@@ -208,7 +213,37 @@ static void int_reloj(){
 
 	printk("-> TRATANDO INT. DE RELOJ\n");
 
-        return;
+	BCP *procesoADesbloquear = lista_bloqueados.primero;
+	BCP *procesoSiguiente = NULL;
+	if(procesoADesbloquear != NULL){
+		procesoSiguiente = procesoADesbloquear->siguiente;
+	}
+
+	while(procesoADesbloquear != NULL){
+		
+		// Calculo de tiempo de bloqueo
+		int numTicksBloqueo = procesoADesbloquear->secs_bloqueo * TICK;
+		int ticksTranscurridos = numTicks - procesoADesbloquear->inicio_bloqueo;
+
+		// Comprueba si el proceso se debe desbloquear
+		if(ticksTranscurridos >= numTicksBloqueo){
+
+			// Proceso de desbloquea y pasa a estado listo
+			procesoADesbloquear->estado = LISTO;
+
+			int nivel_interrupciones = fijar_nivel_int(NIVEL_3);
+			eliminar_elem(&lista_bloqueados, procesoADesbloquear);
+			insertar_ultimo(&lista_listos, procesoADesbloquear);
+			fijar_nivel_int(nivel_interrupciones);	
+		}
+
+		procesoADesbloquear = procesoSiguiente;
+		if(procesoADesbloquear != NULL){
+			procesoSiguiente = procesoADesbloquear->siguiente;
+		}
+	}
+
+    return;
 }
 
 /*
@@ -232,6 +267,21 @@ static void tratar_llamsis(){
 static void int_sw(){
 
 	printk("-> TRATANDO INT. SW\n");
+
+	// Comprueba que proceso en ejecución es el que se quiere bloquear
+	if(idABloquear == p_proc_actual->id){
+		// Pone el proceso ejecutando al final de la cola de listos
+		BCP *proceso = lista_listos.primero;
+		int nivel_interrupciones = fijar_nivel_int(NIVEL_3);
+		eliminar_elem(&lista_listos, proceso);
+		insertar_ultimo(&lista_listos, proceso);
+		fijar_nivel_int(nivel_interrupciones);
+
+		// Cambio de contexto por int sw de planificación
+		BCP *p_proc_bloqueado = p_proc_actual;
+		p_proc_actual = planificador();
+		cambio_contexto(&(p_proc_bloqueado->contexto_regs), &(p_proc_actual->contexto_regs));
+	}
 
 	return;
 }
@@ -339,6 +389,40 @@ int sis_terminar_proceso(){
 
 int sis_obtener_id_pr() {
 	return p_proc_actual->id;
+}
+
+/**Duerme el proceso los segundos especificados por registro**/
+int sis_dormir(){
+
+	unsigned int numSegundos;
+	int nivel_interrupciones;
+	numSegundos = (unsigned int)leer_registro(1);
+
+	// actualiza BCP con el num de segundos y cambia estado a bloqueado
+	p_proc_actual->estado = BLOQUEADO;
+	p_proc_actual->inicio_bloqueo = numTicks;
+	p_proc_actual->secs_bloqueo = numSegundos;	
+
+	// Guarda el nivel anterior de interrupcion y lo fija a 3
+	nivel_interrupciones = fijar_nivel_int(NIVEL_3);
+	
+	// 1. Saca de la lista de procesos listos el BCP del proceso
+	eliminar_elem(&lista_listos, p_proc_actual);
+
+	// 2. Inserta el BCP del proceso en la lista de bloqueados
+	insertar_ultimo(&lista_bloqueados, p_proc_actual);
+
+	// Restaura el nivel de interrupcion anterior
+	fijar_nivel_int(nivel_interrupciones);
+
+	// Cambio de contexto voluntario
+	BCP *p_proc_dormido = p_proc_actual;
+	p_proc_actual = planificador();
+	cambio_contexto(&(p_proc_dormido->contexto_regs), &(p_proc_actual->contexto_regs));
+
+	return 0;
+
+
 }
 
 
