@@ -581,7 +581,6 @@ char *nombre = (char *)leer_registro(1);
 	/*Buscamos en el array de mutex uno con el mismo nombre. COmprobamos existencia*/
 	for (i = 0; i < NUM_MUT; i++){
 		if(array_mutex[i].nombre != NULL && strcmp(array_mutex[i].nombre, nombre) == 0){
-
 			array_mutex[i].procesos[p_proc_actual->id] = 1;
 			encontrado = 1;
 			break;
@@ -597,7 +596,7 @@ char *nombre = (char *)leer_registro(1);
 	int df = -1; 
 	for (i = 0; i < NUM_MUT_PROC; i++){
 		if(p_proc_actual->array_mutex_proceso[i] == NULL){
-			p_proc_actual->array_mutex_proceso[i] = &array_mutex[posMutex];
+			p_proc_actual->array_mutex_proceso[i] = &array_mutex[encontrado];
 			p_proc_actual->numMutex++;
 			df = i;
 			break;
