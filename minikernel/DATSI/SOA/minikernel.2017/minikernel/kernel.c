@@ -12,7 +12,7 @@
  * Fichero que contiene la funcionalidad del sistema operativo
  *
  */
-
+#include <string.h>
 #include "kernel.h"	/* Contiene defs. usadas por este modulo */
 
 /*
@@ -106,9 +106,6 @@ static void espera_int(){
 	int nivel;
 
 	/*printk("-> NO HAY LISTOS. ESPERA INT\n");*/
-
-
-
 	/* Baja al mínimo el nivel de interrupción mientras espera */
 	nivel=fijar_nivel_int(NIVEL_1);
 	halt();
@@ -213,6 +210,10 @@ static void int_terminal(){
 	printk("-> TRATANDO INT. DE TERMINAL %c\n", car);
 
 	// si el buffer no está lleno introduce el caracter nuevo
+	if(caracteresEnBuffer >= TAM_BUF_TERM){
+		return;
+	}
+	
 	if(caracteresEnBuffer < TAM_BUF_TERM){
 		bufferCaracteres[caracteresEnBuffer] = car;
 		caracteresEnBuffer++;		
@@ -662,19 +663,20 @@ int sis_cerrar_mutex(){
 
 }
 
-
+/*
 int sis_leer_caracter(){	
 	while(1){
 		// Si el buffer está vacío se bloquea
 		if(caracteresEnBuffer == 0){
 			p_proc_actual->estado = BLOQUEADO;
 			p_proc_actual->bloqueadoPorLectura = 1;
+
 			int nivel_interrupciones = fijar_nivel_int(NIVEL_3);
 			eliminar_elem(&lista_listos, p_proc_actual);
 			insertar_ultimo(&lista_bloqueados, p_proc_actual);
 			fijar_nivel_int(nivel_interrupciones);
-
 			nivel_interrupciones = fijar_nivel_int(NIVEL_2);
+
 			// Cambio de contexto voluntario		
 			BCP *proceso_bloqueado = p_proc_actual;
 			p_proc_actual = planificador();
@@ -699,8 +701,47 @@ int sis_leer_caracter(){
 	}	
 }
 
+*/
 
 
+int sis_leer_caracter(){
+
+
+
+// Inhibir interrupciones <= nivel 2
+	int lvl_int = fijar_nivel_int(NIVEL_2);
+
+	// Bloqueo si vacio -> con loop en vez de condicion
+	while(caracteresEnBuffer == 0){
+		p_proc_actual->estado = BLOQUEADO;
+		p_proc_actual->bloqueadoPorLectura = 1;
+		int nivel_interrupciones = fijar_nivel_int(NIVEL_3);
+		eliminar_elem(&lista_listos, p_proc_actual);
+		insertar_ultimo(&lista_bloqueados, p_proc_actual);
+		fijar_nivel_int(nivel_interrupciones);
+
+		// Cambio de proceso actual con cambio de contexto
+		BCP *proc_bloq = p_proc_actual;
+		p_proc_actual = planificador();
+		cambio_contexto(&(proc_bloq->contexto_regs), &(p_proc_actual->contexto_regs));
+	}
+
+	// Recuperar primer caracter
+	char car = caracteresEnBuffer[0];
+
+	// Reassign positions in buffer
+	printk("Reasignado buffer, size = %d\n", caracteresEnBuffer);
+	caracteresEnBuffer--;
+	int i;
+	for (i = 0; i < caracteresEnBuffer; i++){
+		caracteresEnBuffer[i] = caracteresEnBuffer[i+1];
+	}
+	fijar_nivel_int(nivel_interrupciones);
+
+	return car;
+
+
+}
 
 int main(){
 	/* se llega con las interrupciones prohibidas */
