@@ -213,6 +213,12 @@ static void int_reloj(){
 
 	printk("-> TRATANDO INT. DE RELOJ\n");
 
+
+
+
+	// Incrementa contador de llamadas a int_reloj
+	numTicks++;
+
 	BCP *procesoADesbloquear = lista_bloqueados.primero;
 	BCP *procesoSiguiente = NULL;
 	if(procesoADesbloquear != NULL){
