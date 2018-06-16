@@ -2,7 +2,7 @@ Memoria
 
 Obtener ID del proceso.
 
-PAra el proceso mas sencillo seguimos los siguientes pasos . 
+Para el proceso mas sencillo seguimos los siguientes pasos . 
 	En Kernel.c creamos y rellenamos la funcion con lo correspondiente para su funcionamiento. En este caso muy sencillo 
 	return p_proc_actual->id;
 	Añadimos en la cabecera del kernel, kernel.h un hueco en el array de servicios para el nuevo servicio. Creando el prototipo de la función.
@@ -11,18 +11,24 @@ PAra el proceso mas sencillo seguimos los siguientes pasos .
 
 
 Dormir un proceso durante unos segundos.
-	En kernel.c creamos y rellenamos la funcion sis_dormir de acorde a su funcionamiento.
+	En kernel.c creamos y rellenamos la funcion sis_dormir de acorde a su funcionamiento:
+		Basicamente metemos el proceso en la cola de bloqueados y lo eliminamos de la listos mientras inhibimos interrupciones.
 	En la tabla BCP añadimos dos campos 
-	int inicio_bloqueo;		/* instante de bloqueo */
-	int secs_bloqueo;		/* numero de segundos de bloqueo */
-	Definimos una lista de procesos esperando en la cabcera del kernel.
+	int tiempo_inicio_bloq;		/* instante de bloqueo */
+	int segundos_bloqueo;		/* numero de segundos de bloqueo */
+	Definimos una lista de procesos esperando en la cabecera del kernel.
 	Rellenamos la funcion de tratamiento de interrupcion de reloj para que desbloquee un proceso si se ha cumplido su tiempo.
 	Rellenamos el resto de cabeceras para el correcto llamamiento de la funcion dormir.
 
 Contabilidad de procesos en modo usuario y modo sistema.
 
-	En kernel.c creamos al funcion tiempos_proceso y la rellenamos de acuerdo a la lógica del programa. Marcamos con una variable global cuandoa accedemos a memoria por si da un excepcion en dicha zona poder evitar que se congele el sistema y solo se aborte el proceso.
-	En la funcion simplemente volcamos los datos de cada proceso almacenado en su tabla de proceso correspondiente al numero de veces llamados en ejecucion o en sistema y los llevamos al struct global creado.
+	En kernel.c creamos al funcion tiempos_proceso y la rellenamos de acuerdo a la lógica del programa. Marcamos con una variable global cuando accedemos a memoria por si da un excepcion en dicha zona poder evitar que se congele el sistema y solo se aborte el proceso.
+
+	En la rutina de tratamiento de interrupcion de reloj actualizamos las variables contador de la tabla de proceso correspondientes a usuario y sistema :
+	int contador_sistema;		/* numero de interr. en modo sistema */
+	int contador_usuario;		/* numero de interr. en modo usuario */
+
+	En la funcion simplemente volcamos los datos de cada proceso almacenado en su tabla de proceso correspondiente al número de veces llamados en ejecución o en sistema y los llevamos al struct global creado.
 
 
  Mutex
@@ -35,4 +41,21 @@ Contabilidad de procesos en modo usuario y modo sistema.
 
   Round Robin
 
-  	La implementacion del round robin es sencillam. Asignamos un parametro en la tabla de proceso ticksRestantesDRodaja. Al comienzo del planificador se lo estableceremos a la variable del sistema TICKS_POR_RODAJA. Y cuando llega un interrucion de reloj miraremos si este tiempo se ha consumido o no.
+  	La implementacion del round robin es sencillam. Asignamos un parametro en la tabla de proceso ticksRestantes. Al comienzo del planificador se lo estableceremos a la variable del sistema TICKS_POR_RODAJA. Y cuando llega un interrupcion de reloj miraremos si este tiempo se ha consumido o no.
+
+  	Si se ha consumido activamos una interrupcion software marcadone el id del proceso en la variable global creada id_int_soft. Esta interrupcion lo bloquea y lo situa al final de la cola de listos.
+
+ Caracteres
+
+
+
+
+
+
+
+
+
+
+
+
+

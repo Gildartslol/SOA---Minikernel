@@ -121,7 +121,7 @@ static BCP * planificador(){
 
 	/*Aqui asignaremos la rodaja del proceso*/
 	BCP *proceso = lista_listos.primero;
-	proceso->ticksRestantesRodaja = TICKS_POR_RODAJA;
+	proceso->ticksRestantes = TICKS_POR_RODAJA;
 
 
 
@@ -223,11 +223,11 @@ static void int_terminal(){
 	
 		int desbloqueado = 0;
 		if (proceso_bloqueado != NULL){
-			if(proceso_bloqueado->bloqueadoPorLectura == 1){
+			if(proceso_bloqueado->bloqueo_por_lectura == 1){
 				// Desbloquear proceso
 				desbloqueado = 1;
 				proceso_bloqueado->estado = LISTO;
-				proceso_bloqueado->bloqueadoPorLectura = 0;
+				proceso_bloqueado->bloqueo_por_lectura = 0;
 				int lvl_interrupciones = fijar_nivel_int(NIVEL_3);
 				eliminar_elem(&lista_bloqueados, proceso_bloqueado);
 				insertar_ultimo(&lista_listos, proceso_bloqueado);
@@ -237,11 +237,11 @@ static void int_terminal(){
 		
 		while(desbloqueado != 1 && proceso_bloqueado != lista_bloqueados.ultimo){
 			proceso_bloqueado = proceso_bloqueado->siguiente;
-			if(proceso_bloqueado->bloqueadoPorLectura == 1){
+			if(proceso_bloqueado->bloqueo_por_lectura == 1){
 				// Desbloquear proceso
 				desbloqueado = 1;
 				proceso_bloqueado->estado = LISTO;
-				proceso_bloqueado->bloqueadoPorLectura = 0;
+				proceso_bloqueado->bloqueo_por_lectura = 0;
 				int lvl_interrupciones = fijar_nivel_int(NIVEL_3);
 				eliminar_elem(&lista_bloqueados, proceso_bloqueado);
 				insertar_ultimo(&lista_listos, proceso_bloqueado);
@@ -273,51 +273,51 @@ static void int_reloj(){
 		}
 	
 
-		// Comprueba si ha terminado rodaja de tiempo del proceso
-		if(p_proc_actual->ticksRestantesRodaja <= 1){
-			// Si no le queda rodaja activa int SW de planificacion
-			idABloquear = p_proc_actual->id;
+		/* Comprobamos la rodaja de tiempo */
+		if(p_proc_actual->ticksRestantes <= 1){
+			/*Si ha consumido toda la rodaja activamos un intr de software*/
+			id_int_soft = p_proc_actual->id;
 			activar_int_SW();
 		}
 		else{
-			// Resta tick de rodaja al proceso
-			p_proc_actual->ticksRestantesRodaja--;
+			/*Restamos rodaja*/
+			p_proc_actual->ticksRestantes--;
 		}
 	}
 
 
-	// Incrementa contador de llamadas a int_reloj
 	numTicks++;
 
-	BCP *procesoADesbloquear = lista_bloqueados.primero;
-	BCP *procesoSiguiente = NULL;
-	if(procesoADesbloquear != NULL){
-		procesoSiguiente = procesoADesbloquear->siguiente;
+	BCP *proceso_desbloqueo = lista_bloqueados.primero;
+	BCP *proceso_siguiente = NULL;
+	if(proceso_desbloqueo != NULL){
+		proceso_siguiente = proceso_desbloqueo->siguiente;
 	}
 
-	while(procesoADesbloquear != NULL){
+	/*Despierta proceso dormido*/
+	while(proceso_desbloqueo != NULL){
 		
-		// Calculo de tiempo de bloqueo
-		int numTicksBloqueo = procesoADesbloquear->segundos_bloqueo * TICK;
-		int ticksTranscurridos = numTicks - procesoADesbloquear->tiempo_inicio_bloq;
+		/*Calculamos el tiempo de bloqueo*/
+		int numTicksBloqueo = proceso_desbloqueo->segundos_bloqueo * TICK;
+		int ticksTranscurridos = numTicks - proceso_desbloqueo->tiempo_inicio_bloq;
 
-		// Comprueba si el proceso se debe desbloquear
+		/* ¿Debe desbloquearse el proceso? */
 		if(ticksTranscurridos >= numTicksBloqueo && 
-				procesoADesbloquear->bloqueadoPorLectura == 0 &&
-				procesoADesbloquear->bloqueadoCreandoMutex == 0){
+				proceso_desbloqueo->bloqueo_por_lectura == 0 &&
+				proceso_desbloqueo->bloqueadoCreandoMutex == 0){
 
-			// Proceso de desbloquea y pasa a estado listo
-			procesoADesbloquear->estado = LISTO;
+			/*Proceso pasa a listo*/
+			proceso_desbloqueo->estado = LISTO;
 
 			int lvl_interrupciones = fijar_nivel_int(NIVEL_3);
-			eliminar_elem(&lista_bloqueados, procesoADesbloquear);
-			insertar_ultimo(&lista_listos, procesoADesbloquear);
+			eliminar_elem(&lista_bloqueados, proceso_desbloqueo);
+			insertar_ultimo(&lista_listos, proceso_desbloqueo);
 			fijar_nivel_int(lvl_interrupciones);	
 		}
 
-		procesoADesbloquear = procesoSiguiente;
-		if(procesoADesbloquear != NULL){
-			procesoSiguiente = procesoADesbloquear->siguiente;
+		proceso_desbloqueo = proceso_siguiente;
+		if(proceso_desbloqueo != NULL){
+			proceso_siguiente = proceso_desbloqueo->siguiente;
 		}
 	}
 
@@ -347,8 +347,8 @@ static void int_sw(){
 	//printk("-> TRATANDO INT. SW\n");
 
 	/*Queremos bloquear el proceso actual*/
-	if(idABloquear == p_proc_actual->id){
-		// Pone el proceso ejecutando al final de la cola de listos
+	if(id_int_soft == p_proc_actual->id){
+		/*Proceso actual al final de la cola de listos*/
 		BCP *proceso = lista_listos.primero;
 		int lvl_interrupciones = fijar_nivel_int(NIVEL_3);
 		eliminar_elem(&lista_listos, proceso);
@@ -670,7 +670,7 @@ int sis_leer_caracter(){
 		// Si el buffer está vacío se bloquea
 		if(caracteresEnBuffer == 0){
 			p_proc_actual->estado = BLOQUEADO;
-			p_proc_actual->bloqueadoPorLectura = 1;
+			p_proc_actual->bloqueo_por_lectura = 1;
 
 			int lvl_interrupciones = fijar_nivel_int(NIVEL_3);
 			eliminar_elem(&lista_listos, p_proc_actual);
@@ -715,7 +715,7 @@ int sis_leer_caracter(){
 	// Bloqueo si vacio -> con loop en vez de condicion
 	while(caracteresEnBuffer == 0){
 		p_proc_actual->estado = BLOQUEADO;
-		p_proc_actual->bloqueadoPorLectura = 1;
+		p_proc_actual->bloqueo_por_lectura = 1;
 		int lvl_interrupciones = fijar_nivel_int(NIVEL_3);
 		eliminar_elem(&lista_listos, p_proc_actual);
 		insertar_ultimo(&lista_bloqueados, p_proc_actual);
@@ -731,7 +731,7 @@ int sis_leer_caracter(){
 	char car = bufferCaracteres[0];
 
 	// Reassign positions in buffer
-	printk("Reasignado buffer, size = %d\n", caracteresEnBuffer);
+	printk("Reasignado buffer, tamanio = %d\n", caracteresEnBuffer);
 	caracteresEnBuffer--;
 	int i;
 	for (i = 0; i < caracteresEnBuffer; i++){

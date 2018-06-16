@@ -50,16 +50,16 @@ typedef struct{
 typedef struct BCP_t *BCPptr;
 
 typedef struct BCP_t {
-    int id;				/* ident. del proceso */
+    int id;				/* identificación del proceso */
     int estado;			/* TERMINADO|LISTO|EJECUCION|BLOQUEADO*/
-    contexto_t contexto_regs;	/* copia de regs. de UCP */
-    void * pila;			/* dir. inicial de la pila */
+    contexto_t contexto_regs;	/* copia de registros de UCP */
+    void * pila;			/* dirección inicial de la pila */
 	BCPptr siguiente;		/* puntero a otro BCP */
 	void *info_mem;			/* descriptor del mapa de memoria */
 
 	/**Funcion dormir**/
-	int tiempo_inicio_bloq;		/* instante de bloqueo */
-	int segundos_bloqueo;		/* numero de segundos de bloqueo */
+	int tiempo_inicio_bloq;		/* momento de bloqueo */
+	int segundos_bloqueo;		/* número de segundos de bloqueo */
 
 	/*Funcion contabilidad*/
 	int contador_sistema;		/* numero de interr. en modo sistema */
@@ -69,14 +69,13 @@ typedef struct BCP_t {
 	int numMutex;			/* numero de mutex */
 	mutex *array_mutex_proceso[NUM_MUT_PROC]; /* Array de mutex del proceso */
 	char *bloqueadoPorMutex; /* Indica el mutex que tiene bloqueado al proceso */
-
 	int bloqueadoCreandoMutex;/* 1 indica que esta bloqueado por crear mutex */
 
 	/*Round Robin*/
-	int ticksRestantesRodaja; /* número de ticks restantes para terminar rodaja */
+	int ticksRestantes; /* número de ticks restantes para terminar rodaja */
 
 	/*Leer caracteres*/
-	int bloqueadoPorLectura;/* 1 indica que esta bloqueado por lectura de caracter */
+	int bloqueo_por_lectura;/* 1 indica que esta bloqueado por lectura de caracter */
 
 } BCP;
 
@@ -128,11 +127,12 @@ int accesoParam = 0;
  * Variable global que representa el número de llamadas a int_reloj
  */
 int numTicks = 0;
+
 /*
- * Variable global que representa el id del proceso al que va
- * dirigida la int sw de planificacion
+   Variable global que representa el id del proceso al que va
+   dirigida la int sw de planificacion
  */
-int idABloquear = 0;
+int id_int_soft = 0;
 
 /*
  * Buffer de caracteres procesados del terminal
