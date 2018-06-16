@@ -184,9 +184,11 @@ static void exc_arit(){
  */
 static void exc_mem(){
 
-	if (!viene_de_modo_usuario())
-		panico("excepcion de memoria cuando estaba dentro del kernel");
-
+if(accesoParam == 0){
+		if (!viene_de_modo_usuario()){
+			panico("excepcion de memoria cuando estaba dentro del kernel");
+		}
+	}
 
 	printk("-> EXCEPCION DE MEMORIA EN PROC %d\n", p_proc_actual->id);
 	liberar_proceso();
