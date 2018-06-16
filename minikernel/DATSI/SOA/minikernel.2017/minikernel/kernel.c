@@ -583,13 +583,13 @@ char *nombre = (char *)leer_registro(1);
 		if(array_mutex[i].nombre != NULL && strcmp(array_mutex[i].nombre, nombre) == 0){
 
 			array_mutex[i].procesos[p_proc_actual->id] = 1;
-			posMutex = 1;
+			encontrado = 1;
 			break;
 		}
 	}
 
 	/*Si no existe el mutex*/
-	if(posMutex == 0){
+	if(encontrado == 0){
 		return -1;
 	}
 
