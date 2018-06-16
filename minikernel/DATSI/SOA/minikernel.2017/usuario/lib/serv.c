@@ -71,5 +71,8 @@ int unlock(unsigned int mutexid){
 int cerrar_mutex(unsigned int mutexid){
 	return llamsis(CERRAR_MUTEX, 1, (long)mutexid);
 }
+int leer_caracter(){
+	return llamsis(LEER_CARACTER,0);
+}
 
 

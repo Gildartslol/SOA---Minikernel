@@ -189,6 +189,7 @@ int sis_abrir_mutex();
 int sis_lock();
 int sis_unlock();
 int sis_cerrar_mutex();
+int sis_leer_caracter();
 
 /*
  * Variable global que contiene las rutinas que realizan cada llamada
@@ -204,7 +205,8 @@ servicio tabla_servicios[NSERVICIOS]={	{
 					{sis_abrir_mutex},
 					{sis_lock},
 					{sis_unlock},
-					{sis_cerrar_mutex}
+					{sis_cerrar_mutex},
+					{sis_leer_caracter}
 
 
 				};

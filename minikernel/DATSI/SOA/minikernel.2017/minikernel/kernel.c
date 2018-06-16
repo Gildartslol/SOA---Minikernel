@@ -210,6 +210,49 @@ static void int_terminal(){
 	car = leer_puerto(DIR_TERMINAL);
 	printk("-> TRATANDO INT. DE TERMINAL %c\n", car);
 
+
+
+char car;
+	car = leer_puerto(DIR_TERMINAL);
+	printk("-> TRATANDO INT. DE TERMINAL %c\n", car);
+
+	// si el buffer no está lleno introduce el caracter nuevo
+	if(caracteresEnBuffer < TAM_BUF_TERM){
+		bufferCaracteres[caracteresEnBuffer] = car;
+		caracteresEnBuffer++;		
+
+		// desbloquea primer proceso bloqueado por lectura
+		BCP *proceso_bloqueado = lista_bloqueados.primero;
+	
+		int desbloqueado = 0;
+		if (proceso_bloqueado != NULL){
+			if(proceso_bloqueado->bloqueadoPorLectura == 1){
+				// Desbloquear proceso
+				desbloqueado = 1;
+				proceso_bloqueado->estado = LISTO;
+				proceso_bloqueado->bloqueadoPorLectura = 0;
+				int nivel_interrupciones = fijar_nivel_int(NIVEL_3);
+				eliminar_elem(&lista_bloqueados, proceso_bloqueado);
+				insertar_ultimo(&lista_listos, proceso_bloqueado);
+				fijar_nivel_int(nivel_interrupciones);
+			}
+		}
+		
+		while(desbloqueado != 1 && proceso_bloqueado != lista_bloqueados.ultimo){
+			proceso_bloqueado = proceso_bloqueado->siguiente;
+			if(proceso_bloqueado->bloqueadoPorLectura == 1){
+				// Desbloquear proceso
+				desbloqueado = 1;
+				proceso_bloqueado->estado = LISTO;
+				proceso_bloqueado->bloqueadoPorLectura = 0;
+				int nivel_interrupciones = fijar_nivel_int(NIVEL_3);
+				eliminar_elem(&lista_bloqueados, proceso_bloqueado);
+				insertar_ultimo(&lista_listos, proceso_bloqueado);
+				fijar_nivel_int(nivel_interrupciones);
+			}
+		}
+	}
+
         return;
 }
 
@@ -298,13 +341,13 @@ static void tratar_llamsis(){
 }
 
 /*
- * Tratamiento de interrupciuones software
+ * Tratamiento de interrupciones software
  */
 static void int_sw(){
 
 	printk("-> TRATANDO INT. SW\n");
 
-	// Comprueba que proceso en ejecución es el que se quiere bloquear
+	/*Queremos bloquear el proceso actual*/
 	if(idABloquear == p_proc_actual->id){
 		// Pone el proceso ejecutando al final de la cola de listos
 		BCP *proceso = lista_listos.primero;
@@ -619,7 +662,44 @@ int sis_unlock(){
 
 int sis_cerrar_mutex(){
 
-	
+
+}
+
+
+int sis_leer_caracter(){	
+	while(1){
+		// Si el buffer está vacío se bloquea
+		if(caracteresEnBuffer == 0){
+			p_proc_actual->estado = BLOQUEADO;
+			p_proc_actual->bloqueadoPorLectura = 1;
+			int nivel_interrupciones = fijar_nivel_int(NIVEL_3);
+			eliminar_elem(&lista_listos, p_proc_actual);
+			insertar_ultimo(&lista_bloqueados, p_proc_actual);
+			fijar_nivel_int(nivel_interrupciones);
+
+			nivel_interrupciones = fijar_nivel_int(NIVEL_2);
+			// Cambio de contexto voluntario		
+			BCP *proceso_bloqueado = p_proc_actual;
+			p_proc_actual = planificador();
+			cambio_contexto(&(proceso_bloqueado->contexto_regs), &(p_proc_actual->contexto_regs));
+			fijar_nivel_int(nivel_interrupciones);
+		}
+		else{
+			int i;
+			// Solicita el primer caracter del buffer
+			int nivel_interrupciones = fijar_nivel_int(NIVEL_2);
+			char car = bufferCaracteres[0];
+			caracteresEnBuffer--;
+
+			// Reordena el buffer
+			for (i = 0; i < caracteresEnBuffer; i++){
+				bufferCaracteres[i] = bufferCaracteres[i+1];
+			}
+			fijar_nivel_int(nivel_interrupciones);
+
+			return (long)car;
+		}
+	}	
 }
 
 

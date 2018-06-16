@@ -30,3 +30,9 @@ Contabilidad de procesos en modo usuario y modo sistema.
   	Para comenzar creamos todas las funciones y variables que especifica el enunciado, como un mutex struc compuesto de nombre, tipo, procesos con el mutex abierto y con el mutex bloqueado.
 
   	En abrir_mutex comporbamos que el mutex existe y procedemos a darle un descriptor.
+
+
+
+  Round Robin
+
+  	La implementacion del round robin es sencillam. Asignamos un parametro en la tabla de proceso ticksRestantesDRodaja. Al comienzo del planificador se lo estableceremos a la variable del sistema TICKS_POR_RODAJA. Y cuando llega un interrucion de reloj miraremos si este tiempo se ha consumido o no.
