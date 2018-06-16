@@ -607,6 +607,21 @@ char *nombre = (char *)leer_registro(1);
 
 }
 
+int sis_lock(){
+
+
+}
+
+int sis_unlock(){
+
+}
+
+
+int sis_cerrar_mutex(){
+
+	
+}
+
 
 
 
