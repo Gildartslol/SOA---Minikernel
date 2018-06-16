@@ -213,7 +213,7 @@ static void int_terminal(){
 	if(caracteresEnBuffer >= TAM_BUF_TERM){
 		return;
 	}
-	
+
 	if(caracteresEnBuffer < TAM_BUF_TERM){
 		bufferCaracteres[caracteresEnBuffer] = car;
 		caracteresEnBuffer++;		
@@ -709,8 +709,8 @@ int sis_leer_caracter(){
 
 
 // Inhibir interrupciones <= nivel 2
-	int lvl_int = fijar_nivel_int(NIVEL_2);
-
+	
+	int nivel_interrupciones = fijar_nivel_int(NIVEL_2);
 	// Bloqueo si vacio -> con loop en vez de condicion
 	while(caracteresEnBuffer == 0){
 		p_proc_actual->estado = BLOQUEADO;
@@ -727,14 +727,14 @@ int sis_leer_caracter(){
 	}
 
 	// Recuperar primer caracter
-	char car = caracteresEnBuffer[0];
+	char car = bufferCaracteres[0];
 
 	// Reassign positions in buffer
 	printk("Reasignado buffer, size = %d\n", caracteresEnBuffer);
 	caracteresEnBuffer--;
 	int i;
 	for (i = 0; i < caracteresEnBuffer; i++){
-		caracteresEnBuffer[i] = caracteresEnBuffer[i+1];
+		bufferCaracteres[i] = bufferCaracteres[i+1];
 	}
 	fijar_nivel_int(nivel_interrupciones);
 
