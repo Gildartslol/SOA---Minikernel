@@ -303,8 +303,7 @@ static void int_reloj(){
 
 		/* ¿Debe desbloquearse el proceso? */
 		if(ticksTranscurridos >= numTicksBloqueo && 
-				proceso_desbloqueo->bloqueo_por_lectura == 0 &&
-				proceso_desbloqueo->bloqueadoCreandoMutex == 0){
+				proceso_desbloqueo->bloqueo_por_lectura == 0 ){
 
 			/*Proceso pasa a listo*/
 			proceso_desbloqueo->estado = LISTO;
