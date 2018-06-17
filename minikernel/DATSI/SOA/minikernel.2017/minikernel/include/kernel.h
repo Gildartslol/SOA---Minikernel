@@ -66,10 +66,7 @@ typedef struct BCP_t {
 	int contador_usuario;		/* numero de interr. en modo usuario */
 
 	/**Funcion MUTEX*/
-	int numMutex;			/* numero de mutex */
-	mutex *array_mutex_proceso[NUM_MUT_PROC]; /* Array de mutex del proceso */
-	char *bloqueadoPorMutex; /* Indica el mutex que tiene bloqueado al proceso */
-	int bloqueadoCreandoMutex;/* 1 indica que esta bloqueado por crear mutex */
+	
 
 	/*Round Robin*/
 	int ticksRestantes; /* número de ticks restantes para terminar rodaja */
